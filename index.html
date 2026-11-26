@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unlock the King’s Crown</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:#e5f5ef;color:#102039;font:18px system-ui,sans-serif;text-align:center}
+main{position:relative;overflow:hidden;width:min(100%,740px);padding:clamp(20px,5vw,46px);background:#fffaf0;border:2px solid #e1c981;border-radius:28px;box-shadow:0 14px 36px #12283920}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.05;margin:8px 0 20px}
+.eyebrow{color:#28635e;font-weight:700}
+#crown{font-size:88px;filter:grayscale(1);transition:filter .3s,transform .3s}
+#crown.unlocked{filter:drop-shadow(0 0 16px #f3ba23);transform:scale(1.15)}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin:24px 0}
+button{font:inherit;font-weight:750;color:inherit;cursor:pointer;padding:14px}
+.clue{border:2px solid #287a70;border-radius:14px;background:#bceee3}
+.clue+ .clue{background:#daeaff;border-color:#4e77a2}
+.clue[aria-pressed=true]{background:#ffe395;border-color:#a97112}
+small{display:block;font-weight:500;margin-top:4px}
+button:focus-visible{outline:3px solid #102039;outline-offset:4px}
+#status{min-height:3em;font-weight:750}
+#reset{background:none;border:0;text-decoration:underline;color:#28635e}
+.spark{position:absolute;left:50%;top:36%;font-size:30px;color:var(--color);pointer-events:none;animation:burst 1s ease-out both}
+@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(120deg) scale(1.3);opacity:0}}
+@media(prefers-reduced-motion:reduce){.spark{display:none}#crown{transition:none}}
+</style>
+<main>
+<div class="eyebrow">King of the Meadow</div>
+<h1>Unlock the King’s Crown</h1>
+<div id="crown" aria-hidden="true">👑</div>
+<p>Find two clues. Underline them on Miro and tell us what they show.</p>
+<div class="choices">
+<button class="clue" type="button" aria-pressed="false">What did he SAY?<small>Mark clue found</small></button>
+<button class="clue" type="button" aria-pressed="false">What did he DO?<small>Mark clue found</small></button>
+</div>
+<p id="status" role="status">0 of 2 clues found</p>
+<button id="reset" type="button">Reset round</button>
+</main>
+<script>
+const board = document.querySelector('main');
+const crown = document.querySelector('#crown');
+const clues = Array.from(document.querySelectorAll('.clue'));
+const status = document.querySelector('#status');
+function celebrate() {
+  for (let i = 0; i < 20; i++) {
+    const angle = i * Math.PI / 10;
+    const distance = i % 2 === 0 ? 160 : 95;
+    const star = document.createElement('span');
+    star.className = 'spark';
+    star.textContent = '✦';
+    star.setAttribute('aria-hidden', 'true');
+    star.style.setProperty('--x', Math.cos(angle) * distance + 'px');
+    star.style.setProperty('--y', Math.sin(angle) * distance + 'px');
+    star.style.setProperty('--color', ['#b47708', '#077f72', '#4e77a2'][i % 3]);
+    board.append(star);
+    setTimeout(() => star.remove(), 1050);
+  }
+}
+function update() {
+  const count = clues.filter(clue => clue.getAttribute('aria-pressed') === 'true').length;
+  const won = count === 2;
+  crown.classList.toggle('unlocked', won);
+  status.textContent = won ? 'Crown unlocked! What kind of king is he, and how do we know?' : count + ' of 2 clues found';
+  if (won) celebrate();
+}
+function mark(clue, found) {
+  clue.setAttribute('aria-pressed', String(found));
+  clue.querySelector('small').textContent = found ? '✓ Clue found' : 'Mark clue found';
+}
+clues.forEach(clue => clue.addEventListener('click', () => {
+  if (clue.getAttribute('aria-pressed') === 'true') return;
+  mark(clue, true);
+  update();
+}));
+document.querySelector('#reset').addEventListener('click', () => {
+  clues.forEach(clue => mark(clue, false));
+  board.querySelectorAll('.spark').forEach(star => star.remove());
+  update();
+  clues[0].focus();
+});
+</script>
+</html>
