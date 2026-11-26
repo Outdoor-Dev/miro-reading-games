@@ -23,7 +23,6 @@ function show(next){
 function play(){
  show(0);
  button.hidden=true;
- button.textContent='Dinner in progress…';
  setTimeout(()=>show(1),2400);
  setTimeout(()=>show(2),5400);
  setTimeout(()=>{show(3);button.hidden=false;},8700);
