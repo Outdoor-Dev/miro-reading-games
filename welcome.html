@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miss Lopez’s Welcome</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff4dc;color:#102039;font:700 17px system-ui,sans-serif}
+main{width:min(100%,640px);padding:9px 16px;text-align:center}
+h1{font-size:clamp(24px,7vw,41px);margin:0}
+.track{position:relative;overflow:hidden;height:89px;margin:4px 0 8px;border-radius:16px;background:linear-gradient(#d8f5ee 74%,#a7e0ca 74%)}
+.fox{position:absolute;z-index:1;left:8%;bottom:11px;font-size:48px;line-height:1}
+.fox span{display:block}
+.flag{position:absolute;right:14%;bottom:10px;font-size:37px}
+.playing .fox,.arrived .fox{left:68%;transform:translateX(-50%)}
+.playing .fox{animation:cross 1.25s ease-out both}
+.playing .fox span{animation:hop .25s ease-in-out 5}
+@keyframes cross{from{left:8%}to{left:68%}}
+@keyframes hop{50%{transform:translateY(-12px) rotate(-8deg)}}
+.spark{position:absolute;left:72%;bottom:38px;color:#9a5800;pointer-events:none;animation:burst .85s ease-out both}
+@keyframes burst{to{transform:translate(var(--x),var(--y)) rotate(90deg);opacity:0}}
+button{padding:7px 16px;background:#ffd66b;border:2px solid #896015;border-radius:12px;font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid #102039;outline-offset:3px}
+p{min-height:1.5em;margin:6px 0 0}
+@media(prefers-reduced-motion:reduce){.playing .fox,.playing .fox span,.spark{animation:none}.spark{display:none}}
+</style>
+<main>
+<h1>Hey, readers!</h1>
+<div class="track" aria-hidden="true"><span class="fox"><span>🦊</span></span><span class="flag">🚩</span></div>
+<button type="button">Send in the fox</button>
+<p role="status"></p>
+</main>
+<script>
+const track = document.querySelector('.track');
+const button = document.querySelector('button');
+const message = document.querySelector('[role=status]');
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let revealTimer;
+let started = false;
+
+function reveal() {
+  track.className = 'track arrived';
+  message.textContent = 'Pick a mascot and finish “I like to…” on your note.';
+  if (reducedMotion.matches) return;
+  for (let i = 0; i < 12; i++) {
+    const star = document.createElement('span');
+    const angle = i * Math.PI / 6;
+    star.className = 'spark';
+    star.textContent = '✦';
+    star.style.setProperty('--x', Math.cos(angle) * 67 + 'px');
+    star.style.setProperty('--y', Math.sin(angle) * 42 + 'px');
+    track.append(star);
+    setTimeout(() => star.remove(), 900);
+  }
+}
+
+button.addEventListener('click', () => {
+  clearTimeout(revealTimer);
+  track.querySelectorAll('.spark').forEach(star => star.remove());
+  track.className = 'track';
+  message.textContent = '';
+  if (started) {
+    started = false;
+    button.textContent = 'Send in the fox';
+    return;
+  }
+  started = true;
+  button.textContent = 'Reset';
+  if (reducedMotion.matches) {
+    reveal();
+    return;
+  }
+  void track.offsetWidth;
+  track.classList.add('playing');
+  revealTimer = setTimeout(reveal, 1250);
+});
+</script>
+</html>
